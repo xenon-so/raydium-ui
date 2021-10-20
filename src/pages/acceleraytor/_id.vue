@@ -338,9 +338,9 @@ const { TabPane } = Tabs
     TabPane
   },
 
-  async asyncData({ $accessor, params, error }) {
+  asyncData({ $accessor, params, error }) {
     if (!$accessor.ido.initialized) {
-      await $accessor.ido.requestInfos()
+      // await $accessor.ido.requestInfos()
     }
     const { id } = params
     const pool = $accessor.ido.pools.find((pool) => pool.idoId === id)

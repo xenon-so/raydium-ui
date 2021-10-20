@@ -347,12 +347,12 @@ export default class Wallet extends Vue {
   }
 
   setIdoTimer() {
-    this.idoTimer = window.setInterval(async () => {
+    this.idoTimer = window.setInterval( () => {
       if (!this.ido.loading) {
         if (this.ido.countdown < this.ido.autoRefreshTime) {
           this.$accessor.ido.setCountdown(this.$accessor.ido.countdown + 1)
           if (this.ido.countdown === this.ido.autoRefreshTime) {
-            await this.$accessor.ido.requestInfos()
+            // await this.$accessor.ido.requestInfos()
           }
         }
       }

@@ -1,3 +1,4 @@
+
 <template>
   <div class="container" :class="isMobile ? 'create-pool-mobile' : 'create-pool'">
     <div class="page-head fs-container">

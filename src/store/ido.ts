@@ -1,24 +1,16 @@
 import { getterTree, mutationTree, actionTree } from 'typed-vuex'
 import { cloneDeep } from 'lodash-es'
 
-import { TOKENS } from '@/utils/tokens'
 import { TokenAmount } from '@/utils/safe-math'
 import { commitment, getMultipleAccounts } from '@/utils/web3'
 import {
-  IDO_POOLS,
   IdoPool,
   IdoUserInfo,
-  IDO_POOL_INFO_LAYOUT,
   IDO_USER_INFO_LAYOUT,
   findAssociatedIdoInfoAddress,
-  findAssociatedIdoCheckAddress,
-  IDO_LOTTERY_POOL_INFO_LAYOUT,
-  IdoPoolInfo,
-  IdoLotteryPoolInfo
-} from '@/utils/ido'
+  findAssociatedIdoCheckAddress} from '@/utils/ido'
 import { PublicKey } from '@solana/web3.js'
 import logger from '@/utils/logger'
-import { getUnixTs } from '@/utils'
 
 const AUTO_REFRESH_TIME = 60
 
@@ -68,84 +60,84 @@ export const mutations = mutationTree(state, {
 export const actions = actionTree(
   { state, getters, mutations },
   {
-    async requestInfos({ commit, dispatch }) {
-      commit('setLoading', true)
-      dispatch('getIdoAccounts')
+    // async requestInfos({ commit, dispatch }) {
+    //   commit('setLoading', true)
+    //   dispatch('getIdoAccounts')
 
-      const conn = this.$web3
+    //   const conn = this.$web3
 
-      const idoPools: Array<IdoPool> = cloneDeep(IDO_POOLS)
-      const publicKeys: Array<PublicKey> = []
+    //   const idoPools: Array<IdoPool> = cloneDeep(IDO_POOLS)
+    //   const publicKeys: Array<PublicKey> = []
 
-      const keys = ['idoId']
-      const keyLength = keys.length
+    //   const keys = ['idoId']
+    //   const keyLength = keys.length
 
-      idoPools.forEach((pool) => {
-        const { idoId } = pool
+    //   idoPools.forEach((pool) => {
+    //     const { idoId } = pool
 
-        publicKeys.push(new PublicKey(idoId))
-      })
+    //     publicKeys.push(new PublicKey(idoId))
+    //   })
 
-      const multipleInfo = await getMultipleAccounts(conn, publicKeys, commitment)
-      multipleInfo.forEach((info, index) => {
-        if (info) {
-          const poolIndex = parseInt((index / keyLength).toString())
-          // const keyIndex = index % keyLength
-          // const key = keys[keyIndex]
+    //   const multipleInfo = await getMultipleAccounts(conn, publicKeys, commitment)
+    //   multipleInfo.forEach((info, index) => {
+    //     if (info) {
+    //       const poolIndex = parseInt((index / keyLength).toString())
+    //       // const keyIndex = index % keyLength
+    //       // const key = keys[keyIndex]
 
-          const data = Buffer.from(info.account.data)
+    //       const data = Buffer.from(info.account.data)
 
-          const pool = idoPools[poolIndex]
+    //       const pool = idoPools[poolIndex]
 
-          if (pool.version === 3) {
-            const decoded = IDO_LOTTERY_POOL_INFO_LAYOUT.decode(data)
-            pool.info = {
-              poolVersion: pool.version,
-              startTime: decoded.startTime.toNumber(),
-              endTime: decoded.endTime.toNumber(),
-              startWithdrawTime: decoded.startWithdrawTime.toNumber(),
+    //       if (pool.version === 3) {
+    //         const decoded = IDO_LOTTERY_POOL_INFO_LAYOUT.decode(data)
+    //         pool.info = {
+    //           poolVersion: pool.version,
+    //           startTime: decoded.startTime.toNumber(),
+    //           endTime: decoded.endTime.toNumber(),
+    //           startWithdrawTime: decoded.startWithdrawTime.toNumber(),
 
-              minDepositLimit: new TokenAmount(decoded.minDepositLimit.toNumber(), pool.quote.decimals),
-              maxDepositLimit: new TokenAmount(decoded.maxDepositLimit.toNumber(), pool.quote.decimals),
-              stakePoolId: decoded.stakePoolId,
-              minStakeLimit: new TokenAmount(decoded.minStakeLimit.toNumber(), TOKENS.RAY.decimals),
-              quoteTokenDeposited: new TokenAmount(decoded.quoteTokenDeposited.toNumber(), pool.quote.decimals)
-            } as IdoLotteryPoolInfo
-            pool.status =
-              pool.info.endTime < getUnixTs() / 1000
-                ? 'ended'
-                : pool.info.startTime < getUnixTs() / 1000
-                ? 'open'
-                : 'upcoming'
-          } else {
-            const decoded = IDO_POOL_INFO_LAYOUT.decode(data)
-            pool.info = {
-              poolVersion: pool.version,
-              startTime: decoded.startTime.toNumber(),
-              endTime: decoded.endTime.toNumber(),
-              startWithdrawTime: decoded.startWithdrawTime.toNumber(),
+    //           minDepositLimit: new TokenAmount(decoded.minDepositLimit.toNumber(), pool.quote.decimals),
+    //           maxDepositLimit: new TokenAmount(decoded.maxDepositLimit.toNumber(), pool.quote.decimals),
+    //           stakePoolId: decoded.stakePoolId,
+    //           minStakeLimit: new TokenAmount(decoded.minStakeLimit.toNumber(), TOKENS.RAY.decimals),
+    //           quoteTokenDeposited: new TokenAmount(decoded.quoteTokenDeposited.toNumber(), pool.quote.decimals)
+    //         } as IdoLotteryPoolInfo
+    //         pool.status =
+    //           pool.info.endTime < getUnixTs() / 1000
+    //             ? 'ended'
+    //             : pool.info.startTime < getUnixTs() / 1000
+    //             ? 'open'
+    //             : 'upcoming'
+    //       } else {
+    //         const decoded = IDO_POOL_INFO_LAYOUT.decode(data)
+    //         pool.info = {
+    //           poolVersion: pool.version,
+    //           startTime: decoded.startTime.toNumber(),
+    //           endTime: decoded.endTime.toNumber(),
+    //           startWithdrawTime: decoded.startWithdrawTime.toNumber(),
 
-              minDepositLimit: new TokenAmount(decoded.minDepositLimit.toNumber(), pool.quote.decimals),
-              maxDepositLimit: new TokenAmount(decoded.maxDepositLimit.toNumber(), pool.quote.decimals),
-              stakePoolId: decoded.stakePoolId,
-              minStakeLimit: new TokenAmount(decoded.minStakeLimit.toNumber(), TOKENS.RAY.decimals),
-              quoteTokenDeposited: new TokenAmount(decoded.quoteTokenDeposited.toNumber(), pool.quote.decimals)
-            } as IdoPoolInfo
-            pool.status =
-              pool.info.endTime < getUnixTs() / 1000
-                ? 'ended'
-                : pool.info.startTime < getUnixTs() / 1000
-                ? 'open'
-                : 'upcoming'
-          }
-        }
-      })
+    //           minDepositLimit: new TokenAmount(decoded.minDepositLimit.toNumber(), pool.quote.decimals),
+    //           maxDepositLimit: new TokenAmount(decoded.maxDepositLimit.toNumber(), pool.quote.decimals),
+    //           stakePoolId: decoded.stakePoolId,
+    //           minStakeLimit: new TokenAmount(decoded.minStakeLimit.toNumber(), TOKENS.RAY.decimals),
+    //           quoteTokenDeposited: new TokenAmount(decoded.quoteTokenDeposited.toNumber(), pool.quote.decimals)
+    //         } as IdoPoolInfo
+    //         pool.status =
+    //           pool.info.endTime < getUnixTs() / 1000
+    //             ? 'ended'
+    //             : pool.info.startTime < getUnixTs() / 1000
+    //             ? 'open'
+    //             : 'upcoming'
+    //       }
+    //     }
+    //   })
 
-      commit('setPools', idoPools)
-      logger('Ido pool infomations updated')
-      commit('setInitialized')
-      commit('setLoading', false)
-    },
+    //   commit('setPools', idoPools)
+    //   logger('Ido pool infomations updated')
+    //   commit('setInitialized')
+    //   commit('setLoading', false)
+    // },
 
     async getIdoAccounts({ state, commit }) {
       const conn = this.$web3

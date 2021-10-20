@@ -60,8 +60,8 @@ const web3Plugin: Plugin = async (ctx, inject) => {
   let configFrom
 
   try {
-    config = await $api.getConfig()
-    configFrom = 'remote'
+    config = web3Config
+    configFrom = 'local'
   } catch (error) {
     config = web3Config
     configFrom = 'local'

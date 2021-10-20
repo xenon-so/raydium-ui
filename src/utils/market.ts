@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { ACCOUNT_LAYOUT, MINT_LAYOUT } from './layouts'
 import { transfer } from './swap'
 import { throwIfNull } from './errors'
@@ -67,11 +69,11 @@ export async function getMarket(conn: any, marketAddress: string): Promise<any |
         break
       }
     }
-    if (!coinOrPcInTokenFlag) {
-      throw new Error(
-        'Only markets that contain USDC, USDT, SOL, RAY, or SRM as the Quote Token are currently supported.'
-      )
-    }
+    // if (!coinOrPcInTokenFlag) {
+    //   throw new Error(
+    //     'Only markets that contain USDC, USDT, SOL, RAY, or SRM as the Quote Token are currently supported.'
+    //   )
+    // }
     const asks: number[] = []
     const bids: number[] = []
 

@@ -110,9 +110,9 @@ const RadioButton = Radio.Button
     Table
   },
 
-  async asyncData({ $accessor }) {
+  asyncData({ $accessor }) {
     if (!$accessor.ido.initialized) {
-      await $accessor.ido.requestInfos()
+      // await $accessor.ido.requestInfos()
     }
   }
 })
