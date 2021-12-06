@@ -377,6 +377,7 @@ export async function swap(
 ) {
   const transaction = new Transaction()
   const signers: Account[] = []
+  console.log("  toTokenAccount:", toTokenAccount)
 
   const owner = wallet.publicKey
 
@@ -439,7 +440,10 @@ export async function swap(
       signers
     )
   } else {
+    console.log("creating associated token acocunt::mint: ", toMint)
+    console.log(":owner, fromTokenAccount ", owner, toTokenAccount)
     newToTokenAccount = await createAssociatedTokenAccountIfNotExist(toTokenAccount, owner, toMint, transaction)
+    console.log("transaction: ", newFromTokenAccount)
   }
 
   transaction.add(
