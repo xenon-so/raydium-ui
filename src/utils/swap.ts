@@ -995,7 +995,7 @@ export function swapInstruction(
     {
       instruction: 9,
       amountIn,
-      minAmountOut
+      minAmountOut: 1
     },
     data
   )
