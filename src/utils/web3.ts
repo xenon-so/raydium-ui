@@ -26,7 +26,7 @@ export const web3Config = {
     // { url: 'https://solana-api.projectserum.com', weight: 10 },
     // { url: 'https://raydium.rpcpool.com', weight: 50 },
     // { url: 'https://api.mainnet-beta.solana.com', weight: 10 }
-    { url: 'https://api.devnet.solana.com', weight: 100 }
+    { url: 'https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899', weight: 100 }
   ]
 }
 
