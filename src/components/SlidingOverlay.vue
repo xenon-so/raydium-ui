@@ -21,8 +21,22 @@
         <p>Health</p>
         <Progress :percent="healthPercent" />
       </div>
-
-      <button v-on:click="checkIfWalletExists" class="sliding-card-btn">Get 200$ Faucet</button>
+      <div class="account-status-list">
+        <p>USDC</p>
+        <span>{{ usdcBalance }}</span>
+      </div>
+      <div class="account-status-list">
+        <p>BTC</p>
+        <span>{{ btcBalance }}</span>
+      </div>
+      <div class="account-status-list">
+        <p>ETH</p>
+        <span>{{ ethBalance }}</span>
+      </div>
+      <div class="account-status-list">
+        <p>WSOL</p>
+        <span>{{ wsolBalance }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -35,8 +49,10 @@ import { mapState } from 'vuex'
 
 import { Progress, Collapse } from 'ant-design-vue'
 import { PublicKey } from '@solana/web3.js'
-import { MARGIN_DATA, XENON_DATA } from '../utils/investinLayout'
-Vue.use(Progress, Collapse)
+import { ACCOUNT_LAYOUT, MARGIN_DATA, XENON_DATA } from '../utils/investinLayout'
+import * as BufferLayout from 'buffer-layout'
+
+Vue.use(Progress)
 
 const programId = new PublicKey('CLbDtJTcL7NMtsujFRuHx5kLxjDgjmEuM2jZqswk7bbN')
 export const MAX_RATE = 4.75 * 10 ** -8
@@ -44,11 +60,46 @@ export const MAX_RATE_YEAR = 1.5
 export const OPTIMAL_UTIL = 0.7
 export const OPTIMAL_RATE = 1.9 * 10 ** -9
 export const OPTIMAL_RATE_YEAR = 0.06
+const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+
+const TOKENS = {
+  WSOL: {
+    symbol: 'WSOL',
+    name: 'Wrapped Solana',
+    mintAddress: 'So11111111111111111111111111111111111111112',
+    decimals: 9,
+    referrer: 'HTcarLHe7WRxBQCWvhVB8AP56pnEtJUV2jDGvcpY3xo5',
+    tags: ['raydium']
+  },
+  BTC: {
+    symbol: 'BTC',
+    name: 'Wrapped Bitcoin',
+    mintAddress: '3UNBZ6o52WTWwjac2kPUb4FyodhU1vFkRJheu1Sh2TvU',
+    decimals: 6,
+    referrer: 'GZpS8cY8Nt8HuqxzJh6PXTdSxc38vFUjBmi7eEUkkQtG',
+    tags: ['raydium']
+  },
+  ETH: {
+    symbol: 'ETH',
+    name: 'Wrapped Ethereum',
+    mintAddress: 'Cu84KB3tDL6SbFgToHMLYVDJJXdJjenNzSKikeAvzmkA',
+    decimals: 6,
+    referrer: 'CXPTcSxxh4AT38gtv3SPbLS7oZVgXzLbMb83o4ziXjjN',
+    tags: ['raydium']
+  },
+  USDC: {
+    symbol: 'USDC',
+    name: 'USD Coin',
+    mintAddress: '8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN',
+    decimals: 6,
+    referrer: 'CXPTcSxxh4AT38gtv3SPbLS7oZVgXzLbMb83o4ziXjjN',
+    tags: ['raydium']
+  }
+}
 
 export default Vue.extend({
   components: {
-    Progress,
-    Collapse
+    Progress
   },
   data() {
     return {
@@ -73,7 +124,11 @@ export default Vue.extend({
       accountLeverage: 0,
       borrowAPR: 0,
       assetValue: 0,
-      healthPercent: 0
+      healthPercent: 0,
+      usdcBalance: 0,
+      btcBalance: 0,
+      ethBalance: 0,
+      wsolBalance: 0
     }
   },
   watch: {
@@ -85,6 +140,18 @@ export default Vue.extend({
         this.checkIfWalletExists()
       },
       deep: true
+    },
+    usdcBalance: function (val) {
+      this.checkIfWalletExists()
+    },
+    btcBalance: function (val) {
+      this.checkIfWalletExists()
+    },
+    ethBalance: function (val) {
+      this.checkIfWalletExists()
+    },
+    wsolBalance: function (val) {
+      this.checkIfWalletExists()
     }
   },
   computed: {
@@ -94,6 +161,50 @@ export default Vue.extend({
     this.checkIfWalletExists()
   },
   methods: {
+    async getPricesFromCoingecko() {
+      const res = await fetch(
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin%2Csolana%2Cethereum%2Cserum&order=market_cap_desc&per_page=100&page=1&sparkline=false'
+      )
+      const data = await res.json()
+      return data
+    },
+    async getTotalAssets(usdcBalance: number, btcBalance: number, ethBalance: number, wsolBalance: number) {
+      const prices = await this.getPricesFromCoingecko()
+      const btcTotal = btcBalance * prices.find((t: any) => t.id === 'bitcoin').current_price
+      const ethTotal = ethBalance * prices.find((t: any) => t.id === 'ethereum').current_price
+      const solTotal = wsolBalance * prices.find((t: any) => t.id === 'solana').current_price
+      return parseFloat(`${usdcBalance}`) + btcTotal + ethTotal + solTotal
+    },
+    getOwnedAccountsFilters(publicKey: PublicKey) {
+      return [
+        {
+          memcmp: {
+            offset: ACCOUNT_LAYOUT.offsetOf('owner'),
+            bytes: publicKey.toBase58()
+          }
+        },
+        {
+          dataSize: ACCOUNT_LAYOUT.span
+        }
+      ]
+    },
+    mapTokens(resps: any) {
+      const tokens = []
+      for (const res of resps) {
+        tokens.push({
+          pubkey: res.pubkey,
+          data: ACCOUNT_LAYOUT.decode(res.account.data)
+        })
+      }
+      return tokens
+    },
+    roundDownTo4Decimals(value: any) {
+      if (value) {
+        return parseFloat(`${Math.floor(value * 10000) / 10000}`).toFixed(4)
+      } else {
+        return 0
+      }
+    },
     async checkIfWalletExists() {
       if (this.$wallet) {
         const xenonPDA = await PublicKey.findProgramAddress([Buffer.from('xenon_v1')], programId)
@@ -112,10 +223,10 @@ export default Vue.extend({
             'recent'
           )
         }
-
         const marginPDA = await PublicKey.findProgramAddress([this.$wallet?.walletPublicKey.toBuffer()], programId)
-        if (xenonInfo) {
-          let marginData = MARGIN_DATA.decode(xenonInfo.data)
+        let marginInfo = await this.$web3.getAccountInfo(marginPDA[0])
+        if (marginInfo) {
+          let marginData = MARGIN_DATA.decode(marginInfo.data)
           this.accountMarginData = marginData
 
           const marginAccountSubscription = this.$web3.onAccountChange(
@@ -128,7 +239,6 @@ export default Vue.extend({
           )
         }
 
-        console.log(`second program data :: `, this.xenonProgramData)
         let borrowRate = 0
         if (this.xenonProgramData) {
           const totalBorrows = this.xenonProgramData.total_borrows
@@ -154,23 +264,117 @@ export default Vue.extend({
           borrowRate = 0
         }
 
-        const assets = Number((this.accountMarginData.assets / 10 ** 6).toFixed(2))
+        const totalAssets = await this.getTotalAssets(
+          this.usdcBalance,
+          this.btcBalance,
+          this.ethBalance,
+          this.wsolBalance
+        )
+
+        const assets = totalAssets
         const currentDate = Math.floor(Date.now() / 1000)
         const lastUpdatedTime = (this.xenonProgramData.last_updated as any).toNumber()
         const borrowIndex =
           this.xenonProgramData.borrow_index +
           this.xenonProgramData.borrow_index * borrowRate * (currentDate - lastUpdatedTime)
+
         const liabs = (this.accountMarginData.liabs / 10 ** 6) * borrowIndex
+
         this.liabilities = liabs
-        this.usdcLeftToBorrow = assets - 2 * liabs < 0 ? 0 : assets - 2 * liabs
-        const coll_ratio = this.accountMarginData.assets / 10 ** 6 / liabs
+
+        this.usdcLeftToBorrow = Number((assets - 2 * liabs < 0 ? 0 : assets - 2 * liabs).toFixed(2))
+
+        const coll_ratio = assets / liabs
         this.accountLeverage = Number((1 / (coll_ratio - 1) + 1).toFixed(2))
-        console.log(`(1 / (coll_ratio - 1) + 1).toFixed(2) ::: `, Number((1 / (coll_ratio - 1) + 1).toFixed(2)))
         this.borrowAPR = Number((borrowRate * 3.154e7 * 100).toFixed(2))
-        this.assetValue = Number((this.accountMarginData.assets / 10 ** 6).toFixed(2))
-        this.healthPercent = Number(
-          ((this.accountMarginData.assets / this.accountMarginData.liabs - 1.2) * 100).toFixed(0)
-        )
+        this.assetValue = totalAssets
+
+        this.healthPercent = Number(((assets / (this.accountMarginData.liabs / 10 ** 6) - 1.2) * 100).toFixed(0))
+
+        let filters = this.getOwnedAccountsFilters(marginPDA[0])
+        let resp = await this.$web3.getProgramAccounts(TOKEN_PROGRAM_ID, {
+          filters
+        })
+
+        const mappedTokens = this.mapTokens(resp)
+        try {
+          const token = mappedTokens.find((t) => t.data.mint.toBase58() === TOKENS.USDC.mintAddress)
+          const accounts = token?.pubkey
+          const walletBalance = await this.$web3.getTokenAccountBalance(accounts, 'max')
+          this.usdcBalance = Number(walletBalance.value.uiAmountString) ?? 0
+          const USDCAccountSubscription = this.$web3.onAccountChange(
+            accounts,
+            (x, y) => {
+              const USDCAccState = ACCOUNT_LAYOUT.decode(x.data)
+              const bal = this.roundDownTo4Decimals(USDCAccState.amount.toNumber() / 10 ** TOKENS.USDC.decimals)
+              this.usdcBalance = Number(bal)
+              // console.log("state changed ::", USDCAccState, bal)
+            },
+            'recent'
+          )
+        } catch (error) {
+          console.error('error reading usdc account :>> ', error)
+        }
+
+        try {
+          const token = mappedTokens.find((t) => t.data.mint.toBase58() === TOKENS.WSOL.mintAddress)
+          const accounts = token?.pubkey
+          const walletBalance = await this.$web3.getTokenAccountBalance(accounts, 'max')
+          this.wsolBalance = Number(walletBalance.value.uiAmountString)
+
+          const USDCAccountSubscription = this.$web3.onAccountChange(
+            accounts,
+            (x, y) => {
+              const USDCAccState = ACCOUNT_LAYOUT.decode(x.data)
+              const bal = this.roundDownTo4Decimals(USDCAccState.amount.toNumber() / 10 ** TOKENS.WSOL.decimals)
+              this.wsolBalance = Number(bal)
+              // console.log("state changed ::", USDCAccState, bal)
+            },
+            'recent'
+          )
+        } catch (error) {
+          console.error('error reading WSOL account :>> ', error)
+        }
+
+        try {
+          const token = mappedTokens.find((t) => t.data.mint.toBase58() === TOKENS.BTC.mintAddress)
+          const accounts = token?.pubkey
+          const walletBalance = await this.$web3.getTokenAccountBalance(accounts, 'max')
+          this.btcBalance = Number(walletBalance.value.uiAmountString)
+
+          const USDCAccountSubscription = this.$web3.onAccountChange(
+            accounts,
+            (x, y) => {
+              const USDCAccState = ACCOUNT_LAYOUT.decode(x.data)
+              const bal = this.roundDownTo4Decimals(USDCAccState.amount.toNumber() / 10 ** TOKENS.BTC.decimals)
+              this.btcBalance = Number(bal)
+              // console.log("state changed ::", USDCAccState, bal)
+            },
+            'recent'
+          )
+        } catch (error) {
+          console.error('error reading BTC account :>> ', error)
+        }
+
+        try {
+          const token = mappedTokens.find((t) => t.data.mint.toBase58() === TOKENS.ETH.mintAddress)
+          const accounts = token?.pubkey
+          const walletBalance = await this.$web3.getTokenAccountBalance(accounts, 'max')
+          this.ethBalance = Number(walletBalance.value.uiAmountString)
+
+          const USDCAccountSubscription = this.$web3.onAccountChange(
+            accounts,
+            (x, y) => {
+              const USDCAccState = ACCOUNT_LAYOUT.decode(x.data)
+              const bal = this.roundDownTo4Decimals(USDCAccState.amount.toNumber() / 10 ** TOKENS.ETH.decimals)
+              this.ethBalance = Number(bal)
+              // console.log("state changed ::", USDCAccState, bal)
+            },
+            'recent'
+          )
+        } catch (error) {
+          console.error('error reading ETH account :>> ', error)
+        }
       }
     }
   }
@@ -361,6 +565,10 @@ export default Vue.extend({
   font-size: 18px;
   height: 58px;
   cursor: pointer;
+}
+
+.ant-collapse-arrow {
+  display: none !important;
 }
 
 .sliding_card_inner .ant-collapse > .ant-collapse-item > .ant-collapse-header .ant-collapse-arrow {
