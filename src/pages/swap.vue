@@ -356,7 +356,6 @@
             !initialized ||
             loading ||
             swaping ||
-           
             gt(
               fromCoinAmount,
               fromCoin && fromCoin.balance
@@ -1257,10 +1256,10 @@ export default Vue.extend({
         let maxAmountOut = 0
 
         if (this.amms) {
-          console.log("amms:: ", this.amms)
+          console.log('amms:: ', this.amms)
 
           for (const poolInfo of this.amms) {
-                  console.log("poolinfo:: ", poolInfo)
+            console.log('poolinfo:: ', poolInfo)
 
             const { amountOut, amountOutWithSlippage, priceImpact } = getSwapOutAmount(
               poolInfo,
@@ -1950,5 +1949,4 @@ export default Vue.extend({
 .ant-progress-text {
   color: white !important;
 }
-
 </style>
