@@ -27,7 +27,7 @@
       <div v-else class="wallet-info">
         <p class="address" @click="debug">{{ wallet.address }}</p>
 
-        <Button ghost @click="disconnect"> DISCONNECT </Button>
+        <Button ghost @click="disconnect"> DISCONNECTTTT </Button>
 
         <div v-if="historyList.length" class="tx-history-panel">
           <h2>Recent Transactions</h2>
@@ -118,7 +118,7 @@ export default class Wallet extends Vue {
       getAdapter() {
         return new PhantomWalletAdapter()
       }
-    },
+    }
   }
 
   connectingWallet = {
@@ -327,7 +327,7 @@ export default class Wallet extends Vue {
 
     const adapter = new PhantomWalletAdapter()
 
-    console.log("hereeeee >>>>> ")
+    console.log('hereeeee >>>>> ')
 
     if (adapter) {
       // adapter.on('ready', onReady)

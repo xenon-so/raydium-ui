@@ -415,7 +415,7 @@ export async function signTransaction(
       const puppetProg = ix.programId
       ix.keys.unshift({pubkey: ix.programId, isSigner: false, isWritable: false})
       ix.keys.unshift({pubkey: signerKey!, isSigner: true, isWritable: true})
-      ix.programId = new PublicKey('CLbDtJTcL7NMtsujFRuHx5kLxjDgjmEuM2jZqswk7bbN')
+      ix.programId = new PublicKey('9RZ8Fgh2n5urcfkUw6jDHBn1DnrDaiitc9uuc8UevMeY')
       console.log("keys::", ix.keys)
       const signerIndex = ix.keys.findIndex((x => (x.pubkey.toBase58() === wallet.publicKey.toBase58())))
       console.log("signerIndex:: ", signerIndex)

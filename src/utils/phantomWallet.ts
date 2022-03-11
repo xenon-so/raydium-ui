@@ -2,7 +2,7 @@ import EventEmitter from 'eventemitter3';
 import { Commitment, Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { sign } from 'crypto';
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
-export const programId = new PublicKey('CLbDtJTcL7NMtsujFRuHx5kLxjDgjmEuM2jZqswk7bbN');
+export const programId = new PublicKey('9RZ8Fgh2n5urcfkUw6jDHBn1DnrDaiitc9uuc8UevMeY');
 
 type PhantomEvent = 'disconnect' | 'connect';
 type PhantomRequestMethod =
@@ -62,7 +62,8 @@ export class PhantomWalletAdapter
     console.log('this._provider?.publicKey :>> ', this._provider?.publicKey);
 
     if(this._provider && this._provider?.publicKey) {
-      PublicKey.findProgramAddress([this._provider?.publicKey.toBuffer()], programId).then(x =>  this.xenonPda = x[0]);
+      // PublicKey.findProgramAddress([this._provider?.publicKey.toBuffer()], programId).then(x =>  this.xenonPda = x[0]);
+      this.xenonPda = new PublicKey('78FDFHPP4PTzCaLfXUKt9vZcPELLvnnS3wnQeGNwRAsm')
     }
   }
 
@@ -144,7 +145,7 @@ export class PhantomWalletAdapter
         const puppetProg = ix.programId
         ix.keys.unshift({pubkey: ix.programId, isSigner: false, isWritable: false})
         ix.keys.unshift({pubkey: signerKey!, isSigner: true, isWritable: true})
-        ix.programId = new PublicKey('CLbDtJTcL7NMtsujFRuHx5kLxjDgjmEuM2jZqswk7bbN')
+        ix.programId = new PublicKey('9RZ8Fgh2n5urcfkUw6jDHBn1DnrDaiitc9uuc8UevMeY')
         console.log("keys::", ix.keys)
         const signerIndex = ix.keys.findIndex((x => (x.pubkey.toBase58() === this.publicKey.toBase58())))
         console.log("signerIndex:: ", signerIndex)
