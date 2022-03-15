@@ -54,7 +54,7 @@ import * as BufferLayout from 'buffer-layout'
 
 Vue.use(Progress)
 
-const programId = new PublicKey('CLbDtJTcL7NMtsujFRuHx5kLxjDgjmEuM2jZqswk7bbN')
+const programId = new PublicKey('9RZ8Fgh2n5urcfkUw6jDHBn1DnrDaiitc9uuc8UevMeY')
 export const MAX_RATE = 4.75 * 10 ** -8
 export const MAX_RATE_YEAR = 1.5
 export const OPTIMAL_UTIL = 0.7
@@ -223,14 +223,15 @@ export default Vue.extend({
             'recent'
           )
         }
-        const marginPDA = await PublicKey.findProgramAddress([this.$wallet?.walletPublicKey.toBuffer()], programId)
-        let marginInfo = await this.$web3.getAccountInfo(marginPDA[0])
+        // const marginPDA = await PublicKey.findProgramAddress([this.$wallet?.walletPublicKey.toBuffer()], programId)
+        const marginPDA = new PublicKey('78FDFHPP4PTzCaLfXUKt9vZcPELLvnnS3wnQeGNwRAsm');
+        let marginInfo = await this.$web3.getAccountInfo(marginPDA)
         if (marginInfo) {
           let marginData = MARGIN_DATA.decode(marginInfo.data)
           this.accountMarginData = marginData
 
           const marginAccountSubscription = this.$web3.onAccountChange(
-            marginPDA[0],
+            marginPDA,
             (x, y) => {
               const data = MARGIN_DATA.decode(x.data)
               this.accountMarginData = data
@@ -291,7 +292,7 @@ export default Vue.extend({
 
         this.healthPercent = Number(((assets / (this.accountMarginData.liabs / 10 ** 6) - 1.2) * 100).toFixed(0))
 
-        let filters = this.getOwnedAccountsFilters(marginPDA[0])
+        let filters = this.getOwnedAccountsFilters(marginPDA)
         let resp = await this.$web3.getProgramAccounts(TOKEN_PROGRAM_ID, {
           filters
         })

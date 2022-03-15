@@ -118,6 +118,7 @@ export const actions = actionTree(
 
       if (wallet && wallet.connected) {
         commit('setLoading', true)
+        // const wallet.publicKey =  new PublicKey('78FDFHPP4PTzCaLfXUKt9vZcPELLvnnS3wnQeGNwRAsm');
 
         const filters = getOwnedAccountsFilters(wallet.publicKey);
         conn.getProgramAccounts(TOKEN_PROGRAM_ID, {

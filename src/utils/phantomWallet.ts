@@ -2,6 +2,7 @@ import EventEmitter from 'eventemitter3';
 import { Commitment, Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { sign } from 'crypto';
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { raydiumAdapterProgramId } from './ids';
 export const programId = new PublicKey('9RZ8Fgh2n5urcfkUw6jDHBn1DnrDaiitc9uuc8UevMeY');
 
 type PhantomEvent = 'disconnect' | 'connect';
@@ -61,10 +62,10 @@ export class PhantomWalletAdapter
 
     console.log('this._provider?.publicKey :>> ', this._provider?.publicKey);
 
-    if(this._provider && this._provider?.publicKey) {
+    // if(this._provider && this._provider?.publicKey) {
       // PublicKey.findProgramAddress([this._provider?.publicKey.toBuffer()], programId).then(x =>  this.xenonPda = x[0]);
       this.xenonPda = new PublicKey('78FDFHPP4PTzCaLfXUKt9vZcPELLvnnS3wnQeGNwRAsm')
-    }
+    // }
   }
 
   private _handleDisconnect = (...args: any) => {
@@ -128,6 +129,8 @@ export class PhantomWalletAdapter
   
     console.log("transaction before  :: ", JSON.parse(JSON.stringify(transaction)) )
     console.log("signers:: ", signers)
+
+    const raydiumAdapterPDA = await PublicKey.findProgramAddress([this.publicKey.toBuffer()], raydiumAdapterProgramId);
   
     // transaction.setSigners(...signers.map((s) => s.publicKey));
     console.log("transaction after setSignbers :: ", JSON.parse(JSON.stringify(transaction)) )
@@ -144,6 +147,9 @@ export class PhantomWalletAdapter
         console.log("SUBSTUTING.....")
         const puppetProg = ix.programId
         ix.keys.unshift({pubkey: ix.programId, isSigner: false, isWritable: false})
+        ix.keys.unshift({pubkey: raydiumAdapterPDA[0], isSigner: false, isWritable: true})
+        console.log("Adapter_pda:", raydiumAdapterPDA)
+        ix.keys.unshift({pubkey: new PublicKey('ESGLD86vC4sh8M6nQS9jip918y4YsDv7FUaXMx9HrdvV'), isSigner: false, isWritable: false})
         ix.keys.unshift({pubkey: signerKey!, isSigner: true, isWritable: true})
         ix.programId = new PublicKey('9RZ8Fgh2n5urcfkUw6jDHBn1DnrDaiitc9uuc8UevMeY')
         console.log("keys::", ix.keys)
@@ -154,10 +160,13 @@ export class PhantomWalletAdapter
           ix.keys[signerIndex].isWritable = true
         }
         // update instruction data, append 10 as opcode
-        let new_data = new Uint8Array(ix.data.length+1)
+        let new_data = new Uint8Array(ix.data.length+1+2+1)
         new_data[0] = 10 // ix opcode
+        new_data[1] = 0
+        new_data[2] = 0
+        new_data[3] = 1
         for (let i=0; i<ix.data.length; i++) {
-          new_data[i+1] = ix.data[i]
+          new_data[i+1+2+1] = ix.data[i]
         }
         ix.data = Buffer.from(new_data.buffer)
       }
@@ -202,7 +211,7 @@ export class PhantomWalletAdapter
     // console.log("other singer:: ", transaction.signatures[1].publicKey.toBase58(), transaction.signatures[1].signature)
     // return await wallet.signTransaction(transaction);
     let signedTrans =  await this._provider.signTransaction(transaction);
-    return await connection.sendRawTransaction(signedTrans.serialize(), { skipPreflight: false });
+    return await connection.sendRawTransaction(signedTrans.serialize(), { skipPreflight: true });
   }
 
   connect() {

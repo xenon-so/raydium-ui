@@ -13,7 +13,7 @@ import {
   TransactionSignature
 } from '@solana/web3.js'
 
-import { ASSOCIATED_TOKEN_PROGRAM_ID, RENT_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@/utils/ids'
+import { ASSOCIATED_TOKEN_PROGRAM_ID, raydiumAdapterProgramId, RENT_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@/utils/ids'
 import { ACCOUNT_LAYOUT, MINT_LAYOUT } from '@/utils/layouts'
 import { TOKENS } from '@/utils/tokens'
 
@@ -445,7 +445,8 @@ export async function signTransaction(
     });
     
 
-  console.log("transaction after prepend data:: ", JSON.parse(JSON.stringify(transaction)))
+  console.log("transaction after prepend data:: ", (transaction))
+  console.log("testing")
   // let signers = transaction.signatures.map((s) => s.publicKey)
   // console.log("signers list before:: ", signers)
  
@@ -504,7 +505,7 @@ export async function sendTransaction(
   // return sign;
   const txid: TransactionSignature = await wallet.sendTransaction(transaction, connection, {
     signers,
-    skipPreflight: false,
+    skipPreflight: true,
     preflightCommitment: commitment
   })
 

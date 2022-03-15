@@ -7,6 +7,9 @@ export const RENT_PROGRAM_ID = new PublicKey('SysvarRent111111111111111111111111
 export const CLOCK_PROGRAM_ID = new PublicKey('SysvarC1ock11111111111111111111111111111111')
 export const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
 
+export const programId = new PublicKey('9RZ8Fgh2n5urcfkUw6jDHBn1DnrDaiitc9uuc8UevMeY');
+export const raydiumAdapterProgramId = new PublicKey('ESGLD86vC4sh8M6nQS9jip918y4YsDv7FUaXMx9HrdvV');
+
 export const SERUM_PROGRAM_ID_V2 = 'DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY'
 export const SERUM_PROGRAM_ID_V3 = 'DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY'
 
