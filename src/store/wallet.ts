@@ -133,8 +133,10 @@ export const actions = actionTree(
               const tokenAccountAddress = tokenAccountPubkey.toBase58()
               // console.log(`tokenAccountAddress`, tokenAccountAddress)
               const parsedData = ACCOUNT_LAYOUT.decode(tokenAccountInfo.account.data)
+              console.log("parsedData ::: ", parsedData);
               // console.log(`parsedData :::: `, parsedData)
               const token = TOKENS[Object.keys(TOKENS).find(t => TOKENS[t].mintAddress === parsedData.mint.toBase58()) ?? ''];
+              console.log("token ::: ", token);
 
               // const parsedInfo = parsedData.info
               const mintAddress = parsedData.mint

@@ -122,6 +122,30 @@ export const TOKENS: Tokens = {
     decimals: 6,
     referrer: 'CXPTcSxxh4AT38gtv3SPbLS7oZVgXzLbMb83o4ziXjjN',
     tags: ['raydium']
+  },
+  'BTC-USDC-V4': {
+    symbol: 'BTC-USDC',
+    name: 'BTC-USDC LP',
+    mintAddress: 'B97YZwx1QFbeb931jfNxhdgR7719CRujiDFv1mszXFvD',
+    decimals: 6,
+    referrer: 'CXPTcSxxh4AT38gtv3SPbLS7oZVgXzLbMb83o4ziXjjN',
+    tags: ['raydium']
+  },
+  'ETH-USDC-V4': {
+    symbol: 'ETH-USDC',
+    name: 'ETH-USDC LP',
+    mintAddress: 'C3BXR57eCWpvTw6VigvQxMvq8xzdoL4a1xEkJtZiGV3p',
+    decimals: 6,
+    referrer: 'CXPTcSxxh4AT38gtv3SPbLS7oZVgXzLbMb83o4ziXjjN',
+    tags: ['raydium']
+  },
+  'WSOL-USDC-V4': {
+    symbol: 'WSOL-USDC',
+    name: 'WSOL-USDC LP',
+    mintAddress: '62WBthbtnyuLBk7c8VrX5gztbSJGWaa8ScQurEJUCmp6',
+    decimals: 9,
+    referrer: 'CXPTcSxxh4AT38gtv3SPbLS7oZVgXzLbMb83o4ziXjjN',
+    tags: ['raydium']
   }
 }
 
